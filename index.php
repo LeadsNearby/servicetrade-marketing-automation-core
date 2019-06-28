@@ -24,7 +24,7 @@ foreach ($webhook['data'] as $webhook_event) {
     /***** Process Job Webhooks *****/
     case 'job':
 
-        // If It's a Job, look to see if it is a newly created job.
+        // If It's a Job, look to see if it is a newly created or updated job.
         if ($webhook_event['action'] === 'created' || 'updated') {
 
             // Make Request to Jobs Endpoint to Get Data
@@ -57,10 +57,10 @@ foreach ($webhook['data'] as $webhook_event) {
             // Get Ontraport Field Meta
             $op_meta = $op_api_requests->getContactMeta();
 
-            // Package Data to Transfer to OP
+            // Package Data to Transfer to Ontraport
             $op_array = ServiceTradeUtility::package_op_contact_data($op_meta, $packaged_job_data);
 
-            //Post Data to Ontraport
+            // Post Data to Ontraport
             if (!empty($op_array['email'])) {
                 $op_contact_response = $op_api_requests->ContactsPost($op_array);
             }
@@ -76,10 +76,8 @@ foreach ($webhook['data'] as $webhook_event) {
     /***** Process Quote Webhooks *****/
     case 'quote':
 
-        // Process Data from newly created Webhooks
+        // Process Data from newly created or updated Webhooks
         if ($webhook_event['action'] === 'created' || $webhook_event['action'] === 'updated') {
-
-            //logPrinter::debugLog($webhook_event, LOG_DIR);
 
             $event_id = $webhook_event['entity']['id'];
 
@@ -87,10 +85,8 @@ foreach ($webhook['data'] as $webhook_event) {
             $quote_response = $servicetrade_requests->get_request_single('quote', $event_id);
             $quote_response['request type'] = 'quote';
 
-            /**
-             * Exit if No Email Address Log the Location ID to
-             * Log the Location ID to the No Email Log for Troubleshooting Later
-             * */
+            // Exit if No Email Address Log the Location ID to
+            // Log the Location ID to the No Email Log for Troubleshooting Later
             if (filter_var($quote_response['data']['location']['primaryContact']['email'], FILTER_VALIDATE_EMAIL) === false) {
                 exit('No Email Address');
                 logPrinter::noEmailLog($quote_response['data']['location']['id'], LOG_DIR);
@@ -114,13 +110,13 @@ foreach ($webhook['data'] as $webhook_event) {
             // Post Data to Ontraport
             $op_contact_response = json_decode($op_api_requests->ContactsPost($op_contact_array), true);
 
-            /**  Assign the OP ID of the Customer for Quote Attribution
-             *  Then Package up the Data Again */
+            //Assign the OP ID of the Customer for Quote Attribution
+            // Then Package up the Data Again
             $packaged_quote_data['customer'] = $op_contact_response['data']['attrs']['id'];
             $op_quote_array = ServiceTradeUtility::package_op_contact_data($op_quote_meta, $packaged_quote_data);
 
-            /** If New Quote, Create Quote Object in OP with POST
-             * Otherwise Update the Quote with the PUT request using the Contact ID from the Contacts Post Above */
+            // If New Quote, Create Quote Object in OP with POST
+            // Otherwise Update the Quote with the PUT request using the Contact ID from the Contacts Post Above */
             if ($webhook_event['action'] === 'created') {
                 $op_quote_response = $op_api_requests->quotePost($op_quote_array);
                 sleep(1);

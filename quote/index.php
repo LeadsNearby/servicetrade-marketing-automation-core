@@ -12,6 +12,9 @@ $webhook = $_POST;
 
 if (!empty($webhook['Contact_Id']) && !empty($webhook['Quote_Id'])) {
 
+// Random Sleep to Prevent all of the emails from going out at the exact same time
+    sleep(rand(30, 120));
+
     // Package up the Data for the POST
     $params = array(
         'contactIds' => $webhook['Contact_Id'],
