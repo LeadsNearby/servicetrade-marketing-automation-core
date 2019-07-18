@@ -17,6 +17,7 @@ if (!empty($webhook['appt_id'])) {
     );
 
     $appt_response = $servicetrade_requests->put_request('appointment', $put_data, $webhook['appt_id']);
-    print_r($appt_response);
+
+    logPrinter::debugLog($appt_response, LOG_DIR);
 
 }

@@ -15,6 +15,8 @@ if (!empty($webhook['Contact_Id']) && !empty($webhook['Quote_Id'])) {
 // Random Sleep to Prevent all of the emails from going out at the exact same time
     sleep(rand(30, 120));
 
+    $mandrill = new MaEmailer();
+
     // Package up the Data for the POST
     $params = array(
         'contactIds' => $webhook['Contact_Id'],
@@ -34,6 +36,7 @@ if (!empty($webhook['Contact_Id']) && !empty($webhook['Quote_Id'])) {
     // Log the Response if the Message Send Failed
     if ($message_response['data']['failureCount'] > 0) {
         logPrinter::debugLog($messages_response, LOG_DIR);
+        $email_alert = $mandrill->ma_mandrill_send($messages_response, 'Quote Failure');
     }
 }
 
